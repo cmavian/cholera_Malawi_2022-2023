@@ -1,0 +1,30 @@
+Character to attribute mapping:
+  E: ?
+  A: Central
+  B: Gauteng
+  C: Northern
+  D: Southern
+
+
+Substitution rate (mu): 1.213896
+
+Equilibrium frequencies (pi_i):
+  A: 0.101
+  B: 0.1175
+  C: 0.1188
+  D: 0.6626
+
+Symmetrized rates from j->i (W_ij):
+	A	B	C	D
+  A	0	1.0547	1.0391	3.9934
+  B	1.0547	0	1.0604	1.2545
+  C	1.0391	1.0604	0	1.2083
+  D	3.9934	1.2545	1.2083	0
+
+Actual rates from j->i (Q_ij):
+	A	B	C	D
+  A	0	0.1066	0.105	0.4035
+  B	0.1239	0	0.1246	0.1474
+  C	0.1235	0.126	0	0.1436
+  D	2.6461	0.8313	0.8006	0
+
