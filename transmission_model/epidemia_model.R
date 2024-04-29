@@ -1,10 +1,24 @@
+### Run Transmission model ###
+
+if(!require(epidemia))         # Check that epidemia is installed, if not follow below link
+{
+  errorCondition('epidemia installation is required\n 
+                 #install.packages("devtools")
+                 devtools::install_github("ImperialCollegeLondon/epidemia")')
+}
+
+if(!require(rstan)|!require(rstanarm))    # Check that rstan and rstanarm are installed, if not follow below link
+{
+  errorCondition('rstan installation is required, please these instructions:\n
+                 https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started')
+}
+
 library(epidemia)
 library(EpiEstim)
 library(lubridate)
 library(rstanarm)
 library(tidyverse)
 library(patchwork)
-library(harrypotter)
 library(zoo)
 library(latex2exp)
 
@@ -44,32 +58,24 @@ args_ext <- args
 # Estimate epidemia model
 system.time(fm1 <- do.call(epim, args))
 
-# Plot Rt estimates
+# Plot Rt estimates 
+## Figure 3(B)    inset above case curve
+## Figure S3(A)   [if model is run without covariates this would be S3(C)]
 rt_plot  <- spaghetti_rt(fm1) + ylim(c(0.2,1.6)) +
   ylab(TeX("$\\R_t$ estimate")) +
   scale_x_date(date_breaks = "1 month", date_labels =  "%b\n%Y") +
   theme(axis.text.x=element_text(angle=0, hjust=1))
 
 # Plot Observed vs Estimates cases
+## Figure S3(B)
 obs_plot <- spaghetti_obs(fm1,type="Cases") + ylab("Observed and Fitted Cases") +
   scale_x_date(date_breaks = "1 month", date_labels =  "%b\n%Y") +
   theme(axis.text.x=element_text(angle=0, hjust=1)) + theme(legend.position = "none")
 
 # Plot effect sizes for covariates
-pars_plot <- plot(fm1, par_models = "R", par_types = "fixed") # ,prob_outer = 0.8
+## Figure S3(D) [generate for different priors of S0 to reproduce full subplot D]
+pars_plot <- plot(fm1, par_models = "R", par_types = "fixed") 
 
-
-(rt_plot + obs_plot)
-pars_plot
-
-pp_40 <- pars_plot
-
-if(0)
-{
-  rt_plot_fv <- rt_plot
-  obs_plot_fv <- obs_plot
-  pars_plot_fv <- pars_plot
-}
 
 if(SAVE_PLOTS)
 {
@@ -78,36 +84,18 @@ if(SAVE_PLOTS)
   ggsave("effect_sizes.pdf",pars_plot,device = cairo_pdf)
 }
 
-
-#overview plot
-#overview_plot <- (rt_plot_fv + obs_plot_fv + pars_plot_fv) / (rt_plot_f + obs_plot_f + pars_plot_f) / (rt_plot_no_covariates + obs_plot_no_covariates + pars_plot_no_covariates)
-#ggsave("overview_plot.pdf",overview_plot,device = cairo_pdf, width=20, height=16)
-
-# extract Rt estimates from epidemia
-Rt_adj <- colMeans(posterior_rt(fm1)$draw)
-
-data$Rt_adj <- Rt_adj
-data %>% dplyr::select(date,Rt_adj,Cases,ma_cases,rain_proxy,vaccination) %>% mutate('Cases/1000'=Cases/1000,ma_cases=ma_cases/1000) %>%
-  dplyr::select(-Cases) %>%
-  pivot_longer(-date,names_to = "time_series",values_to = 'value') %>%
-  group_by(time_series) %>% ggplot(aes(x=date,y=value,col=time_series)) + geom_line() +
-  theme_light() + scale_color_hp_d(option="NewtScamander") + ylab("")
-
-#new_data <- get_cholera_data() %>% filter(date > date[which(cumsum(Deaths) > 10)[1] - 30])
-#plot_obs(fm1, type = "Cases", newdata = newdata, groups = "Malawi")
-
-# We can validate our estimates using EpiEstim
-res_parametric_si <- estimate_R(data.frame(dates=data$date,I=data$Cases),
-                                method="parametric_si",
-                                config = make_config(list(
-                                  mean_si = 5,
-                                  std_si = 8))
-)
-
-epiestim_compare <- plot(res_parametric_si, 'R') + geom_line(y=Rt_adj[8:length(Rt_adj)],col='blue')
-
-if(SAVE_PLOTS)
+CHECK_MODEL_WITH_EPIDEMIA = FALSE
+if(CHECK_MODEL_WITH_EPIDEMIA)
 {
-  ggsave("EpiEstim_epidemia_compare.pdf",epiestim_compare,device = cairo_pdf)
+  # extract Rt estimates from epidemia
+  Rt_adj <- colMeans(posterior_rt(fm1)$draw)
+  
+  # We can validate our estimates using EpiEstim Rt estimation
+  res_parametric_si <- estimate_R(data.frame(dates=data$date,I=data$Cases),
+                                  method="parametric_si",
+                                  config = make_config(list(mean_si = 5, std_si = 8))
+  )
+  
+  # plot comparison of EpiEstim and epidemia Rt estimation
+  epiestim_compare <- plot(res_parametric_si, 'R') + geom_line(y=Rt_adj[8:length(Rt_adj)],col='blue')
 }
-
