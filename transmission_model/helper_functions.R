@@ -88,7 +88,7 @@ get_cholera_data <- function()
            ma_cases         = rollapply(Cases,7,mean,align='right',fill=NA),
            sign_diff_cases  = sign(ma_cases-dplyr::lag(ma_cases,7)),
            diff_flooding    = replace_na(flooding-dplyr::lag(flooding,1),0),
-           rain_proxy       = (dplyr::lag(diff_flooding * (diff_flooding>0),7)>0.1),  # 5 + 1.4 = mean SI + incubation period
+           rain_proxy       = (dplyr::lag(diff_flooding * (diff_flooding>0),4)>0.1),  # approximately mean SI 
            diff_flooding_l2 = replace_na(flooding-dplyr::lag(flooding,2),0),
            diff_flooding_l3 = replace_na(flooding-dplyr::lag(flooding,3),0),
            diff_flooding_l4 = replace_na(flooding-dplyr::lag(flooding,4),0),
