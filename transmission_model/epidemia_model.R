@@ -41,6 +41,7 @@ cholera_i2o <- get_cholera_i2o()
 # Transmission: define linear predictors and random walk
 # weekly random walk to obtain more stable estimates
 rt <- epirt(formula = R(Country, date) ~ 1 + rain_proxy + vaccination + rw(prior_scale = 0.01,time=week),
+            prior = rstanarm::normal(scale = 1),
             prior_intercept = normal(log(1.56), 0.2), link = 'log')
 
 # Observations: define observations (in our case we only use cases) and the infection to onset distribution
