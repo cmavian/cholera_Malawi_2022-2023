@@ -2,6 +2,13 @@
 
 if(!require(epidemia))         # Check that epidemia is installed, if not follow below link
 {
+  # Recent updates to stan and stan headers are not compatible with epidemia.
+  # If you want to run this code, please ensure that your StanHeaders version is <= 2.26.27, rstan <= 2.21.2 and rstanarm <= 2.21.4.
+  # If required, please delete the packages and install with (note that the order in which you install this matters):
+  # install_version('StanHeaders','2.26')
+  # install_version('rstan','2.21.2')
+  # install_version('rstanarm','2.21.4')
+  # Once you have the downgraded versions of StanHeaders, rstan and rstanarm you can proceed to install epidemia using the below.
   errorCondition('epidemia installation is required\n 
                  #install.packages("devtools")
                  devtools::install_github("ImperialCollegeLondon/epidemia")')
